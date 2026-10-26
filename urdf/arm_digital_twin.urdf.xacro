@@ -1,0 +1,514 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="arm_digital_twin">
+  <xacro:arg name="arm_model" default="moveo"/>
+  <xacro:property name="arm_model" value="$(arg arm_model)"/>
+
+  <xacro:property name="wrist_length" value="0.14"/>
+  <xacro:property name="base_radius" value="0.085"/>
+  <xacro:property name="link_radius" value="0.055"/>
+
+  <xacro:if value="${arm_model == 'moveo'}">
+    <xacro:property name="base_height" value="0.28"/>
+    <xacro:property name="link1_length" value="0.32"/>
+    <xacro:property name="link2_length" value="0.27"/>
+    <xacro:property name="gripper_length" value="0.085"/>
+    <xacro:property name="gripper_width" value="0.010"/>
+    <xacro:property name="base_radius" value="0.095"/>
+    <xacro:property name="link_radius" value="0.050"/>
+  </xacro:if>
+  <xacro:if value="${arm_model == 'mitsubishi'}">
+    <xacro:property name="base_height" value="0.36"/>
+    <xacro:property name="link1_length" value="0.40"/>
+    <xacro:property name="link2_length" value="0.32"/>
+    <xacro:property name="gripper_length" value="0.105"/>
+    <xacro:property name="gripper_width" value="0.014"/>
+    <xacro:property name="base_radius" value="0.12"/>
+    <xacro:property name="link_radius" value="0.075"/>
+  </xacro:if>
+  <xacro:if value="${arm_model == 'generic'}">
+    <xacro:property name="base_height" value="0.24"/>
+    <xacro:property name="link1_length" value="0.25"/>
+    <xacro:property name="link2_length" value="0.21"/>
+    <xacro:property name="gripper_length" value="0.070"/>
+    <xacro:property name="gripper_width" value="0.008"/>
+    <xacro:property name="base_radius" value="0.075"/>
+    <xacro:property name="link_radius" value="0.035"/>
+  </xacro:if>
+  <xacro:if value="${arm_model == 'franka'}">
+    <xacro:property name="base_height" value="0.30"/>
+    <xacro:property name="link1_length" value="0.35"/>
+    <xacro:property name="link2_length" value="0.30"/>
+    <xacro:property name="gripper_length" value="0.10"/>
+    <xacro:property name="gripper_width" value="0.012"/>
+  </xacro:if>
+
+  <xacro:if value="${arm_model == 'moveo'}">
+    <material name="Arm">
+      <color rgba="0.02 0.48 0.82 1.0"/>
+    </material>
+  </xacro:if>
+  <xacro:if value="${arm_model == 'mitsubishi'}">
+    <material name="Arm">
+      <color rgba="0.78 0.12 0.08 1.0"/>
+    </material>
+  </xacro:if>
+  <xacro:if value="${arm_model == 'generic'}">
+    <material name="Arm">
+      <color rgba="0.92 0.62 0.06 1.0"/>
+    </material>
+  </xacro:if>
+  <xacro:if value="${arm_model == 'franka'}">
+    <material name="Arm">
+      <color rgba="0.88 0.89 0.91 1.0"/>
+    </material>
+  </xacro:if>
+
+  <material name="Dark">
+    <color rgba="0.075 0.085 0.10 1.0"/>
+  </material>
+  <material name="Metal">
+    <color rgba="0.48 0.51 0.55 1.0"/>
+  </material>
+  <material name="JointAccent">
+    <color rgba="0.27 0.30 0.34 1.0"/>
+  </material>
+
+  <link name="base_link">
+    <visual>
+      <geometry><cylinder radius="${base_radius}" length="0.10"/></geometry>
+      <origin xyz="0 0 0.05"/>
+      <material name="Dark"/>
+    </visual>
+    <visual>
+      <geometry><cylinder radius="${base_radius * 1.35}" length="0.025"/></geometry>
+      <origin xyz="0 0 0.0125"/>
+      <material name="Dark"/>
+    </visual>
+    <collision>
+      <geometry><cylinder radius="${base_radius}" length="0.10"/></geometry>
+      <origin xyz="0 0 0.05"/>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0.05"/>
+      <mass value="5.0"/>
+      <inertia ixx="0.02" ixy="0" ixz="0" iyy="0.02" iyz="0" izz="0.01"/>
+    </inertial>
+  </link>
+
+  <link name="base_rot">
+    <visual>
+      <geometry>
+        <cylinder radius="${link_radius * 1.05}" length="${base_height - 0.10}"/>
+      </geometry>
+      <origin xyz="0 0 ${(base_height - 0.10) / 2}"/>
+      <material name="Arm"/>
+    </visual>
+    <visual>
+      <geometry><cylinder radius="${base_radius}" length="0.025"/></geometry>
+      <origin xyz="0 0 0.0125"/>
+      <material name="Dark"/>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder radius="${link_radius * 1.05}" length="${base_height - 0.10}"/>
+      </geometry>
+      <origin xyz="0 0 ${(base_height - 0.10) / 2}"/>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 ${(base_height - 0.08) / 2}"/>
+      <mass value="1.5"/>
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+  </link>
+
+  <joint name="joint1" type="revolute">
+    <parent link="base_link"/>
+    <child link="base_rot"/>
+    <origin xyz="0 0 0.10"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-2.967" upper="2.967" effort="80" velocity="2.0"/>
+  </joint>
+
+  <xacro:macro name="arm_segment" params="name length radius">
+    <link name="${name}">
+      <xacro:if value="${arm_model == 'moveo'}">
+        <visual>
+          <geometry>
+            <box size="${length - radius * 1.2} ${radius * 0.55} ${radius * 0.72}"/>
+          </geometry>
+          <origin xyz="${(length + radius * 1.2) / 2} ${radius * 0.82} 0"/>
+          <material name="Arm"/>
+        </visual>
+        <visual>
+          <geometry>
+            <box size="${length - radius * 1.2} ${radius * 0.55} ${radius * 0.72}"/>
+          </geometry>
+          <origin xyz="${(length + radius * 1.2) / 2} ${-radius * 0.82} 0"/>
+          <material name="Arm"/>
+        </visual>
+        <visual>
+          <geometry><box size="${radius * 1.15} ${radius * 2.4} ${radius * 1.1}"/></geometry>
+          <origin xyz="${length * 0.25} 0 0"/>
+          <material name="Dark"/>
+        </visual>
+        <visual>
+          <geometry><box size="${radius * 1.15} ${radius * 2.4} ${radius * 1.1}"/></geometry>
+          <origin xyz="${length * 0.82} 0 0"/>
+          <material name="Dark"/>
+        </visual>
+      </xacro:if>
+      <xacro:if value="${arm_model == 'mitsubishi'}">
+        <visual>
+          <geometry>
+            <cylinder radius="${radius}" length="${length - radius * 1.2}"/>
+          </geometry>
+          <origin xyz="${(length + radius * 1.2) / 2} 0 0" rpy="0 ${pi / 2} 0"/>
+          <material name="Arm"/>
+        </visual>
+        <visual>
+          <geometry><cylinder radius="${radius * 1.10}" length="${radius * 0.55}"/></geometry>
+          <origin xyz="${radius * 1.45} 0 0" rpy="0 ${pi / 2} 0"/>
+          <material name="Dark"/>
+        </visual>
+        <visual>
+          <geometry><cylinder radius="${radius * 1.10}" length="${radius * 0.55}"/></geometry>
+          <origin xyz="${length - radius * 0.35} 0 0" rpy="0 ${pi / 2} 0"/>
+          <material name="Dark"/>
+        </visual>
+      </xacro:if>
+      <xacro:if value="${arm_model == 'generic'}">
+        <visual>
+          <geometry>
+            <box size="${length - radius * 1.2} ${radius} ${radius * 1.10}"/>
+          </geometry>
+          <origin xyz="${(length + radius * 1.2) / 2} 0 0"/>
+          <material name="Arm"/>
+        </visual>
+        <visual>
+          <geometry>
+            <box size="${(length - radius * 1.2) * 0.72} ${radius * 1.72} ${radius * 0.18}"/>
+          </geometry>
+          <origin xyz="${(length + radius * 1.2) / 2} 0 ${radius * 0.58}"/>
+          <material name="Dark"/>
+        </visual>
+      </xacro:if>
+      <xacro:if value="${arm_model == 'franka'}">
+        <visual>
+          <geometry><cylinder radius="${radius}" length="${length - radius * 1.2}"/></geometry>
+          <origin xyz="${(length + radius * 1.2) / 2} 0 0" rpy="0 ${pi / 2} 0"/>
+          <material name="Arm"/>
+        </visual>
+      </xacro:if>
+      <collision>
+        <geometry><box size="${length} ${radius * 2.4} ${radius * 2.0}"/></geometry>
+        <origin xyz="${length / 2} 0 0"/>
+      </collision>
+      <inertial>
+        <origin xyz="${length / 2} 0 0"/>
+        <mass value="1.0"/>
+        <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.02" iyz="0" izz="0.02"/>
+      </inertial>
+    </link>
+    <link name="${name}_pivot_housing">
+      <visual>
+        <geometry><cylinder radius="${radius * 1.35}" length="${radius * 1.50}"/></geometry>
+        <origin xyz="0 0 0" rpy="${pi / 2} 0 0"/>
+        <material name="joint_accent">
+          <color rgba="0.27 0.30 0.34 1.0"/>
+        </material>
+      </visual>
+      <visual>
+        <geometry><cylinder radius="${radius * 1.48}" length="${radius * 0.38}"/></geometry>
+        <origin xyz="0 ${radius * 0.92} 0" rpy="${pi / 2} 0 0"/>
+        <material name="joint_accent">
+          <color rgba="0.27 0.30 0.34 1.0"/>
+        </material>
+      </visual>
+      <visual>
+        <geometry><cylinder radius="${radius * 1.48}" length="${radius * 0.38}"/></geometry>
+        <origin xyz="0 ${-radius * 0.92} 0" rpy="${pi / 2} 0 0"/>
+        <material name="joint_accent">
+          <color rgba="0.27 0.30 0.34 1.0"/>
+        </material>
+      </visual>
+    </link>
+    <joint name="${name}_pivot_housing_fixed" type="fixed">
+      <parent link="${name}"/>
+      <child link="${name}_pivot_housing"/>
+    </joint>
+    <link name="${name}_pivot_covers">
+      <visual>
+        <geometry><box size="${radius * 0.90} ${radius} ${radius * 0.80}"/></geometry>
+        <origin xyz="0 0 ${radius * 1.55}"/>
+        <material name="Dark"/>
+      </visual>
+      <visual>
+        <geometry><cylinder radius="${radius * 1.28}" length="${radius * 0.28}"/></geometry>
+        <origin xyz="0 ${radius * 1.25} 0" rpy="${pi / 2} 0 0"/>
+        <material name="Dark"/>
+      </visual>
+      <visual>
+        <geometry><cylinder radius="${radius * 1.28}" length="${radius * 0.28}"/></geometry>
+        <origin xyz="0 ${-radius * 1.25} 0" rpy="${pi / 2} 0 0"/>
+        <material name="Dark"/>
+      </visual>
+    </link>
+    <joint name="${name}_pivot_covers_fixed" type="fixed">
+      <parent link="${name}"/>
+      <child link="${name}_pivot_covers"/>
+    </joint>
+    <link name="${name}_pivot_metal">
+      <visual>
+        <geometry><box size="${radius * 0.65} ${radius * 0.75} ${radius * 0.12}"/></geometry>
+        <origin xyz="0 0 ${radius * 2.01}"/>
+        <material name="Metal"/>
+      </visual>
+      <visual>
+        <geometry><cylinder radius="${radius * 0.36}" length="${radius * 0.16}"/></geometry>
+        <origin xyz="0 ${radius * 1.39} 0" rpy="${pi / 2} 0 0"/>
+        <material name="Metal"/>
+      </visual>
+      <visual>
+        <geometry><cylinder radius="${radius * 0.36}" length="${radius * 0.16}"/></geometry>
+        <origin xyz="0 ${-radius * 1.39} 0" rpy="${pi / 2} 0 0"/>
+        <material name="Metal"/>
+      </visual>
+    </link>
+    <joint name="${name}_pivot_metal_fixed" type="fixed">
+      <parent link="${name}"/>
+      <child link="${name}_pivot_metal"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:arm_segment name="link1" length="${link1_length}" radius="${link_radius}"/>
+  <joint name="joint2" type="revolute">
+    <parent link="base_rot"/>
+    <child link="link1"/>
+    <origin xyz="0 0 ${base_height - 0.10}"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.5708" upper="1.5708" effort="80" velocity="2.0"/>
+  </joint>
+
+  <xacro:arm_segment name="link2" length="${link2_length}" radius="${link_radius * 0.82}"/>
+  <joint name="joint3" type="revolute">
+    <parent link="link1"/>
+    <child link="link2"/>
+    <origin xyz="${link1_length} 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.5708" upper="1.5708" effort="60" velocity="2.0"/>
+  </joint>
+
+  <xacro:if value="${arm_model == 'mitsubishi'}">
+    <link name="link3">
+      <visual>
+        <geometry>
+          <cylinder radius="${link_radius * 0.72}" length="0.08"/>
+        </geometry>
+        <origin xyz="0.04 0 0" rpy="0 ${pi / 2} 0"/>
+        <material name="Arm"/>
+      </visual>
+      <visual>
+        <geometry>
+          <cylinder radius="${link_radius}" length="0.025"/>
+        </geometry>
+        <origin xyz="0.0125 0 0" rpy="0 ${pi / 2} 0"/>
+        <material name="Dark"/>
+      </visual>
+      <visual>
+        <geometry>
+          <cylinder radius="${link_radius * 0.84}" length="0.018"/>
+        </geometry>
+        <origin xyz="0.069 0 0" rpy="0 ${pi / 2} 0"/>
+        <material name="JointAccent"/>
+      </visual>
+      <collision>
+        <geometry><box size="0.08 ${link_radius * 1.4} ${link_radius * 1.4}"/></geometry>
+        <origin xyz="0.04 0 0"/>
+      </collision>
+      <inertial>
+        <origin xyz="0.04 0 0"/>
+        <mass value="0.3"/>
+        <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+      </inertial>
+    </link>
+    <joint name="mitsubishi_wrist" type="fixed">
+      <parent link="link2"/>
+      <child link="link3"/>
+      <origin xyz="${link2_length} 0 0"/>
+    </joint>
+  </xacro:if>
+
+  <xacro:if value="${arm_model == 'franka'}">
+    <xacro:arm_segment name="link3" length="0.22" radius="0.050"/>
+    <joint name="joint4" type="revolute">
+      <parent link="link2"/>
+      <child link="link3"/>
+      <origin xyz="${link2_length} 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="-2.967" upper="2.967" effort="45" velocity="2.0"/>
+    </joint>
+
+    <xacro:arm_segment name="link4" length="0.20" radius="0.043"/>
+    <joint name="joint5" type="revolute">
+      <parent link="link3"/>
+      <child link="link4"/>
+      <origin xyz="0.22 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-2.094" upper="2.094" effort="35" velocity="2.0"/>
+    </joint>
+
+    <xacro:arm_segment name="link5" length="0.15" radius="0.038"/>
+    <joint name="joint6" type="revolute">
+      <parent link="link4"/>
+      <child link="link5"/>
+      <origin xyz="0.20 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="-2.967" upper="2.967" effort="25" velocity="2.0"/>
+    </joint>
+
+    <xacro:arm_segment name="link6" length="${wrist_length}" radius="0.034"/>
+    <joint name="joint7" type="revolute">
+      <parent link="link5"/>
+      <child link="link6"/>
+      <origin xyz="0.15 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-2.967" upper="2.967" effort="15" velocity="2.0"/>
+    </joint>
+  </xacro:if>
+
+  <link name="gripper_base">
+    <visual>
+      <geometry>
+        <box size="${gripper_length * 0.52} ${gripper_width * 5.5} ${gripper_width * 4.0}"/>
+      </geometry>
+      <origin xyz="${gripper_length * 0.18} 0 0"/>
+      <material name="Dark"/>
+    </visual>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+    </inertial>
+  </link>
+
+  <xacro:if value="${arm_model == 'franka'}">
+    <joint name="gripper_mount" type="fixed">
+      <parent link="link6"/>
+      <child link="gripper_base"/>
+      <origin xyz="${wrist_length} 0 0"/>
+    </joint>
+  </xacro:if>
+  <xacro:unless value="${arm_model == 'franka'}">
+    <joint name="gripper_mount" type="fixed">
+      <xacro:if value="${arm_model == 'mitsubishi'}">
+        <parent link="link3"/>
+      </xacro:if>
+      <xacro:unless value="${arm_model == 'mitsubishi'}">
+        <parent link="link2"/>
+      </xacro:unless>
+      <child link="gripper_base"/>
+      <xacro:if value="${arm_model == 'mitsubishi'}">
+        <origin xyz="0.08 0 0"/>
+      </xacro:if>
+      <xacro:unless value="${arm_model == 'mitsubishi'}">
+        <origin xyz="${link2_length} 0 0"/>
+      </xacro:unless>
+    </joint>
+  </xacro:unless>
+
+  <link name="finger_left">
+    <visual>
+      <geometry><box size="${gripper_length} ${gripper_width} ${gripper_width}"/></geometry>
+      <origin xyz="${gripper_length / 2} ${gripper_width / 2} 0"/>
+      <material name="Metal"/>
+    </visual>
+    <collision>
+      <geometry><box size="${gripper_length} ${gripper_width} ${gripper_width}"/></geometry>
+      <origin xyz="${gripper_length / 2} ${gripper_width / 2} 0"/>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+    </inertial>
+  </link>
+  <joint name="gripper_joint" type="prismatic">
+    <parent link="gripper_base"/>
+    <child link="finger_left"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="0" upper="0.04" effort="20" velocity="0.2"/>
+  </joint>
+
+  <link name="finger_right">
+    <visual>
+      <geometry><box size="${gripper_length} ${gripper_width} ${gripper_width}"/></geometry>
+      <origin xyz="${gripper_length / 2} ${-gripper_width / 2} 0"/>
+      <material name="Metal"/>
+    </visual>
+    <collision>
+      <geometry><box size="${gripper_length} ${gripper_width} ${gripper_width}"/></geometry>
+      <origin xyz="${gripper_length / 2} ${-gripper_width / 2} 0"/>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+    </inertial>
+  </link>
+  <joint name="gripper_joint_mirror" type="prismatic">
+    <parent link="gripper_base"/>
+    <child link="finger_right"/>
+    <axis xyz="0 -1 0"/>
+    <limit lower="0" upper="0.04" effort="20" velocity="0.2"/>
+  </joint>
+
+  <ros2_control name="ArmSystem" type="system">
+    <hardware>
+      <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+    </hardware>
+    <joint name="joint1">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint2">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint3">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <xacro:if value="${arm_model == 'franka'}">
+      <joint name="joint4">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="joint5">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="joint6">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="joint7">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+    </xacro:if>
+    <joint name="gripper_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="gripper_joint_mirror">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+  </ros2_control>
+</robot>

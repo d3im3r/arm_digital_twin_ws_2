@@ -1,0 +1,8 @@
+build/
+install/
+log/
+__pycache__/
+*.py[cod]
+
+# Reference CAD assets are not used by the current lightweight Xacro models.
+robots/
