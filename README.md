@@ -68,7 +68,7 @@ Create a ROS 2 workspace, clone this repository into its `src` directory, and bu
 ```bash
 mkdir -p ~/arm_digital_twin_ws/src
 cd ~/arm_digital_twin_ws/src
-git clone https://github.com/d3im3r/arm-digital-twin-v2.git arm_digital_twin
+git clone https://github.com/d3im3r/arm_digital_twin_ws_2.git arm_digital_twin
 
 cd ~/arm_digital_twin_ws
 source /opt/ros/humble/setup.bash
