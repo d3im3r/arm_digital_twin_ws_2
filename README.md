@@ -42,6 +42,20 @@ Arm Digital Twin turns ROS 2 joint commands into visible motion in RViz. Version
 | `mitsubishi` | 3 | Industrial-style cylindrical bodies |
 | `franka` | 7 | Simplified, articulated industrial arm |
 
+### Visual model guide
+
+Actual RViz captures of the included models, shown with an open gripper. Use the model name below each image as the `arm_model` launch argument.
+
+| Moveo · 3 DOF | Generic · 3 DOF |
+| --- | --- |
+| ![Moveo: blue arm with paired open rails in RViz](docs/images/moveo.png) | ![Generic: compact yellow arm in RViz](docs/images/generic.png) |
+| Blue paired rails. Launch with `arm_model:=moveo`. | Compact yellow links. Launch with `arm_model:=generic`. |
+| **Mitsubishi · 3 DOF** | **Franka-style · 7 DOF** |
+| ![Mitsubishi: red arm with cylindrical links in RViz](docs/images/mitsubishi.png) | ![Franka-style: light gray arm with seven joints in RViz](docs/images/franka.png) |
+| Red cylindrical links. Launch with `arm_model:=mitsubishi`. | Light gray links and seven joints. Launch with `arm_model:=franka`. |
+
+For example: `ros2 launch arm_digital_twin display.launch.py arm_model:=moveo`.
+
 Every model includes a gripper. For the 3-DOF models, `joint1`, `joint2`, and `joint3` control the base, shoulder, and elbow. The Franka-style model adds `joint4` through `joint7`.
 
 ## Requirements
